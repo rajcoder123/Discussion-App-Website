@@ -2,47 +2,57 @@
 <head>
   <title>Discussion Portal</title>
   <link rel="stylesheet" href="discuss.css">
+   <script src="https://use.fontawesome.com/49267b1114.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
-<body>
-  <h1 id="firstHead" >Discussion Portal</h1>
-  <div class="container">
-    <div class="twoBox" style="background-color:rgb(226, 225, 222);">
+<body >
+  <h1 id="firstHead">Discussion Portal</h1>
+  <div class="container" >
+    <div class="twoBox" style="background-color:rgb(236, 236, 236);">
       <div>
-        <button id="newQuestionForm">New Question form</button>
-        <input type="search" placeholder="search questions..." id="questionSearch"/>
+        <input type="search" class="form-control" placeholder="search questions..." id="questionSearch"/>
+        <button id="newQuestionForm" class="btn btn-info">New Question form</button>
+     
       </div>
       <div id="dataList">
+       
       </div>
+     
     </div>
     <div class="twoBox" style="display:block" id="rightContainer">
-      <div id="toggleDisplay">
+      <div id="toggleDisplay" >
+        
           <h1>Welcome to Discussion Portal !</h1>
           <p>Enter a subject and question to get started</p>
           <div id="rightDiv">
-            <input type="text" id="subject" placeholder="Subject"/>
+            <input type="text" class="form-control" id="subject" placeholder="Subject"/>
           </div>
           <div id="rightDiv" >
-            <textarea id="question" placeholder="Write your query description here..."></textarea>
+            <textarea id="question" class="form-control" placeholder="Write your query description here..."></textarea>
           </div>
-          <div style="float:right;">
-            <button type="submit" id="submitBtn">Submit</button>
+          <div>
+            <button type="submit" id="submitBtn" class="btn btn-info">Submit</button>
           </div>
       </div>
-      <div id="respondQue">
+      <div id="respondQue"> 
       </div>
-      <div id="resolveHolder">
-        <button id="resolveQuestion">Resolve</button>
-        <button id="upvote">upvote</upvote>
-        <button id="downvote">downvote</button>
 
-      </div>
+    <div id="resolveHolder">
+      
+      <button id="up" class="btn btn-outline-primary">UpVote</button>
+      <button id="down" class="btn btn-outline-danger">DownVote</button>
+      <button id="resolveQue" class="btn btn-outline-info">Resolve</button>
+    </div>
+    
       <div id="respondAns">
+      
       </div>
       <div id="commentHolder" style="display:none">
-        <input id="pickName" placeholder="Name Please..."/>
-        <textarea id="pickComment" placeholder="Please write your answer here..."></textarea>
-        <button id="commentBtn">Comment</button>
+        <h3>Add Responses</h3>
+        <input id="pickName" class="form-control" placeholder="Name Please..."/>
+        <textarea id="pickComment" class="form-control" placeholder="Please write your answer here..."></textarea>
+        <button id="commentBtn" class="btn btn-info">Comment</button>
       </div>
     </div>
   </div> 
