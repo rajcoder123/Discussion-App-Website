@@ -1,653 +1,682 @@
 var submitQuestionNode=document.getElementById("submitBtn");
-var questionTitleNode=document.getElementById("subject");
-var questionDescriptionNode=document.getElementById("question");
-var allQuestionListNode=document.getElementById("dataList");
-var createQuestionFormNode=document.getElementById("toggleDisplay");
-var questionDetailContainerNode=document.getElementById("respondQue");
-var resolveQuestionContainerNode=document.getElementById("resolveHolder");
-var resolveQuestionNode=document.getElementById("resolveQuestion");
-var responseContainerNode=document.getElementById("respondAns");
-var commentContainerNode=document.getElementById("commentHolder");
-var commentatorNameNode=document.getElementById("pickName");
-var commentNameNode=document.getElementById("pickComment");
-var submitCommentNode=document.getElementById("commentBtn");
-var upvote=document.getElementById("upvote");
-var downvote=document.getElementById("downvote");
-var newQuestionForm=document.getElementById("newQuestionForm");
-newQuestionForm.addEventListener("click",showTheQuesForm);
-function showTheQuesForm()
-{
-  
-     questionDetailContainerNode.style.display="none";
-     resolveQuestionContainerNode.style.display="none",
-    responseContainerNode.style.display="none";
-    commentContainerNode.style.display="none";
-      createQuestionFormNode.style.display="block";
-  
-}
-
+var questionTitleNode=document.getElementById("subject")
+var  questionDescriptionNode=document.getElementById("question")
+var  allQuestionListNode=document.getElementById("dataList")
+var createQuestionFormNode=document.getElementById("toggleDisplay")
+var questionDetailContainerNode=document.getElementById("respondQue")
+var resolverQuestionContainerNode=document.getElementById("resolveHolder")
+var resolverQuestionNode=document.getElementById("resolveQue")
+var responseContainerNode=document.getElementById("respondAns")
+var commentContainerNode=document.getElementById("commentHolder")
+var commentorNameNode=document.getElementById("pickName")
+var commentNameNode=document.getElementById("pickComment")
+var submitCommentNode=document.getElementById("commentBtn")
 var questionSearchNode=document.getElementById("questionSearch");
-questionSearchNode.addEventListener("keyup",function(event)
-{
-      //show filtered result
-      filterResult(event.target.value);
+var up=document.getElementById("up")
+var down=document.getElementById("down")
+var twoBox=document.getElementById("rightContainer")
+var newQuestionForm=document.getElementById("newQuestionForm")
+var twoBox=document.getElementsByClassName("twoBox")
 
+
+// on click newQuestionForm
+  newQuestionForm.onclick=function newQue(){
+  questionDetailContainerNode.style.display = "none";
+  resolverQuestionContainerNode.style.display = "none";
+  commentContainerNode.style.display = "none";
+  resolverQuestionNode.style.display = "none";
+  responseContainerNode.innerHTML = "";
+  createQuestionFormNode.style.display = "block";
+    createQuestionFormNode.style.display = "block"
+
+}
+ 
+//search in question
+questionSearch.addEventListener("keyup",function(event){
+filterResult(event.target.value)
 })
 
-function filterResult(query)
+//function for search
+function filterResult(query){
+ if(query){
+   allQuestionListNode.innerHTML="";
+  getAllQuestion(function(allQuestion)
 {
-  getAllQuestion(function(allQuestions)
-  {
-    if(query)
-  {
-      clearQuestionPanel();
-  
-  var filteredQuestions=allQuestions.filter(function(question)
-  {
-       if(question.title.includes(query))
-       {
-         return true;
-       }
-  });
-
-  if(filteredQuestions.length)
-  {
-    filteredQuestions.forEach(function(question)
-    {
-         addQuestionToPanel(question);
-    })
-  }
-  else
-  {
-    printNoMatchFound();
-  }
-  }
-  else
-  {
-    clearQuestionPanel();
-    allQuestions.forEach(function(question)
-    {
-            addQuestionToPanel(question);
-    });
-
-  }
-  });
-  
+ var result= allQuestion.filter(function(question)
+{
+if(question.title.includes(query))
+ return true;
+})
+if(result.length)
+{
+ result.forEach(function(all){
+   addQuestionToPanel(all);
+ })
+}
+else
+{
+   allQuestionListNode.innerHTML="No match found";
 }
 
-//clear all question
+});
+} 
 
-function clearQuestionPanel()
+else
 {
-  allQuestionListNode.innerHTML="";
+allQuestionListNode.innerHTML=""
+onLoad();
+}
 }
 
-//Display all existing Question
+//get from storage
 function onLoad()
 {
-   getAllQuestion(function(allQuestions)
+ 
+   getAllQuestion(function(allQuestion)
    {
-          allQuestions=allQuestions.sort(function(currentQ,nextQ)
-           {
-         if(currentQ.isFav)
-         {
-           return -1;
-         }
-         return 1;
-         })
-
-   allQuestions.forEach(function(question)
-   {
-         addQuestionToPanel(question);
-   })
+     
+   
+       if(allQuestion!=null){
+    if(allQuestion.length>1){
+        allQuestion.sort(function(type1,type2){
+            if(type1.fav)return -1;
+            if(type2.fav)return 1;
+        })
+    }
+       allQuestion.forEach(function(add)
+       {
+         addQuestionToPanel(add);
+       })
+      }
    });
 
 }
 onLoad();
 
-//listen for the submit button to create question
-
+//listen for the submit btn
 submitQuestionNode.addEventListener("click",onQuestionSubmit);
 
 function onQuestionSubmit()
+{ 
+    if(questionTitleNode.value.length > 0 && questionDescriptionNode.value.length > 0)
+    {
+   var question={
+   title:questionTitleNode.value,
+   description:questionDescriptionNode.value,
+   responses:[],
+   up:0,
+   down:0,
+   date: Date.now(),
+   fav:false
+ }
+ saveQuestion(question,function()
+ {
+    addQuestionToPanel(question);
+ });
+
+  clearQuestionForm();
+}
+else
+   alert("Both Field are Required");
+}
+
+//save question to storage
+function saveQuestion(question,onSave)
 {
-  var question={
-    title:questionTitleNode.value,
-    description:questionDescriptionNode.value,
-    responses:[],
-    upvotes:0,
-    downvotes:0,
-    createdAt: Date.now(),
-    isFav:false
+//  var allQuestion=getAllQuestion();
+getAllQuestion(function(allQuestion)
+{
+  
+   allQuestion.push(question);
 
+ var allData=
+ {
+   data:JSON.stringify(allQuestion)
+ }
+ var req=new XMLHttpRequest();
+ req.open("POST","https://storage.codequotient.com/data/save");
+ req.setRequestHeader("Content-Type","application/json");
+ req.send(JSON.stringify(allData));
+ req.addEventListener("load",function(){
+  onSave();
+})
 
-  }
-    saveStorage(question,function()
-    {
-      addQuestionToPanel(question);
-    });
-    
+})
+
 }
 
-//save question in storage
-
-
-function saveStorage(question,onQuestionSave)
-{  
-    getAllQuestion(function(allQuestion)
-    {
-      allQuestion.push(question);
-
-    
-
-    var body={
-      data:JSON.stringify(allQuestion)
-    }
-
-    var request = new XMLHttpRequest();
-
-    request.open("POST", "https://storage.codequotient.com/data/save");
-    request.setRequestHeader("Content-type","application/json");
-    request.send(JSON.stringify(body));
-
-    request.addEventListener("load",function()
-    {
-       onQuestionSave()
-    })
-
-    })
-
-     
-   
-}
-
-
-//get all question from storage
+//get allquestion from storage
 function getAllQuestion(onResponse)
 {
-  var request=new XMLHttpRequest();
-  request.addEventListener("load",function()
-  {
-    var data =JSON.parse(request.responseText);
+  var req=new XMLHttpRequest();
+   req.addEventListener("load",function(){
+    var data=JSON.parse(req.responseText);
 
     onResponse(JSON.parse(data.data));
   })
-
-  request.open("get","https://storage.codequotient.com/data/get");
-  request.send();
-}
-//append question to the left pane
-
-
-function addQuestionToPanel(question)
-{
-    var questionContainer=document.createElement("div");
-    questionContainer.setAttribute("id",question.title);
-    questionContainer.style.background="grey";
-
-    var newQuestionTitleNode=document.createElement("h4");
-    var newQuestionDescriptionNode=document.createElement("p");
-
-    newQuestionTitleNode.innerHTML=question.title;
-    newQuestionDescriptionNode.innerHTML=question.description;
-    
-    questionContainer.appendChild(newQuestionTitleNode);
-    questionContainer.appendChild(newQuestionDescriptionNode);
-    
-    
-    var upvoteTextNode=document.createElement("h4");
-    upvoteTextNode.innerHTML="upvote = "+ question.upvotes
-    questionContainer.appendChild(upvoteTextNode);
-
-    var downvoteTextNode=document.createElement("h4");
-    downvoteTextNode.innerHTML="downvote = "+ question.downvotes
-    questionContainer.appendChild(downvoteTextNode);
-
-    var createDateAndTimeNode=document.createElement("h3");
-    createDateAndTimeNode.innerHTML=new Date(question.createdAt).toLocaleString();
-    questionContainer.appendChild(createDateAndTimeNode);
-
-    var createAtNode=document.createElement("h3");
-    createAtNode.innerHTML="created"+convertDateToCreatedAtTime(question.createdAt)+ " ago";
-    questionContainer.appendChild(createAtNode);
-
-     setInterval(function()
-     {
-          
-        createAtNode.innerHTML="created"+convertDateToCreatedAtTime(question.createdAt)+ " ago";
-           
-     },1000)
-
-
-     var addToFavNode=document.createElement("button");
-
-     
-     if(question.isFav)
-      {
-       addToFavNode.innerHTML="remove fav";
-      }
-      else
-      {
-     addToFavNode.innerHTML="add fav"
-      }
-     
-     questionContainer.appendChild(addToFavNode);
-
-     addToFavNode.addEventListener("click", toggleFavQuestion(question));
-
-
-    
-    allQuestionListNode.appendChild(questionContainer);
-
-
-
-    
-    
-     clearQuestionForm();
-     questionContainer.addEventListener("click",onQuestionClick(question))
-    
-    
-}
-
-function toggleFavQuestion(question)
-{
-  return function(event)
-  {
-    event.stopPropagation();
-    question.isFav = !question.isFav;
-    updateQuestion(question,function()
-    {
-        if(question.isFav)
-         {
-        event.target.innerHTML="remove fav";
-         }
-        else
-         {
-        event.target.innerHTML="add fav"
-         }
-
-    });
-   
-
-  }
-}
-// convert date to hours ago like format
-function convertDateToCreatedAtTime(date)
-{
-  
-     var currentTime=Date.now();
-   var timeLapsed=currentTime-new Date(date).getTime();
-
-   var secondDiff=parseInt(timeLapsed/1000);
-   var minutesDiff=parseInt(secondDiff/60);
-   var hoursDiff=parseInt(minutesDiff/60);
-
-   return hoursDiff +" hours "+ minutesDiff +" minutes" +secondDiff + "Seconds";
-  
-   
-}
-
-//clear Question Form
-function clearQuestionForm()
-{
-     questionTitleNode.value="";
-     questionDescriptionNode.value="";
-}
-//listen for click the question in left pane
-
-function onQuestionClick(question)
-{
-  return function()
-  {
-    //hide Question panel
-    hideQuestionPanel();
-
-
-     clearQuestionDetails();
-     clearResponsePanel();
-    //show clicked Question
-    showQuestionDetails();
-    
-    
-    //add question to right
-    addQuestionToRight(question);
-
-    //show all previous response
-   allResponses=question.responses.sort(function(currentQ,nextQ)
-      {
-      if(currentQ.isFav)
-      {
-        return -1;
-      }
-
-      return 1;
-    })
-
-    allResponses.forEach(function(response)
-    {
-      addResponsesOnPanel(response);
-    })
-
-    //listen for response Submit
-    submitCommentNode.onclick=onSubmitResponce(question);
-
-    upvote.onclick=upvoteQuestion(question);
-    downvote.onclick=downvoteQuestion(question);
-    resolveQuestionNode.onclick=removeQuestion(question);
-
-  }
-
-}
-
-function upvoteQuestion(question)
-{
-  return function()
-  {
-  
-     question.upvotes++;
-     updateQuestion(question,function()
-     {
-         updateQuestionUI(question);
-     })
-     
-  }
-}
-
-function downvoteQuestion(question)
-{
-  return function()
-  {
-    question.downvotes++;
-    updateQuestion(question,function()
-     {
-         updateQuestionUI(question);
-     })
-    
-  }
-}
-
-function removeQuestion(question)
-{
-  return function()
-  {
-    deleteQuestion(question,function()
-    {
-      deleteQuestiononUI(question);
-    hideCommentDetails();
-    showQuestionForm();
-    });
-    
-   
-  }
-}
-
-
-//update question
-function updateQuestionUI(question)
-{
-      var questionContainerNode=document.getElementById(question.title);
-
-      questionContainerNode.childNodes[2].innerHTML="upvote ="+question.upvotes;
-      questionContainerNode.childNodes[3].innerHTML="downvote ="+question.downvotes;
-}
-
-
-//delete question
-function deleteQuestiononUI(question)
-{
-  var questionContainerNode=document.getElementById(question.title);
- // console.log(questionContainerNode);
-  var parent=questionContainerNode.parentNode;
- // console.log(parent);
-  parent.removeChild(questionContainerNode);
-
-}
-
-//hide comment after resolve
-function hideCommentDetails()
-{
-  questionDetailContainerNode.style.display="none";
-    resolveQuestionContainerNode.style.display="none";
-    responseContainerNode.style.display="none";
-    commentContainerNode.style.display="none";
-   
-}
-
-//show Question form
-function showQuestionForm()
-{
-   createQuestionFormNode.style.display="block";
-}
-//append in the right pane
-//listen for click on submit responce button
-
-
-function onSubmitResponce(question)
-{
-    return function()
-    {
-
-       var response={
-         name: commentatorNameNode.value,
-         description:commentNameNode.value,
-         isFav:false
-
-       }
-        saveResponse(question,response,function()
-        {
-           addResponsesOnPanel(response);
-           clearResponseForm();
-        });
-        
-
-    }
-}
-
-
-//display responce in response section
-
-function addResponsesOnPanel(response)
-{
-    var userNameNode=document.createElement("h2");
-    userNameNode.innerHTML=response.name;
-
-    var userCommentNode=document.createElement("p");
-    userCommentNode.innerHTML=response.description;
-
-    var container=document.createElement("div");
-    container.appendChild(userNameNode);
-    container.appendChild(userCommentNode);
-
-    var addToFavResponseNode=document.createElement("button");
-
-    if(response.isFav)
-      {
-       addToFavResponseNode.innerHTML="remove fav";
-      }
-      else
-      {
-     addToFavResponseNode.innerHTML="add fav"
-      }
-     
-     container.appendChild(addToFavResponseNode);
-
-     addToFavResponseNode.addEventListener("click", toggleFavResponse(response));
-
-    responseContainerNode.appendChild(container);
-
-
-}
-
-function toggleFavResponse(response)
-{
-  return function(event)
-  {
-    response.isFav = !response.isFav;
-    updateResponses(response);
-   if(response.isFav)
-   {
-    event.target.innerHTML="remove fav";
-   }
-   else
-   {
-     event.target.innerHTML="add fav"
-   }
-
-
-  }
-}
+  req.open("GET","https://storage.codequotient.com/data/get");
+  req.send();
  
 
-//hide Question Panel
-function hideQuestionPanel()
-{
-    createQuestionFormNode.style.display="none";
 }
 
-//dispaly Question Details
-function showQuestionDetails()
-{
-     questionDetailContainerNode.style.display="block";
-     resolveQuestionContainerNode.style.display="block";
-     responseContainerNode.style.display="block";
-    commentContainerNode.style.display="block";
-}
+//append question to the right side
+function addQuestionToPanel(question){
 
-function addQuestionToRight(question)
-{
-   var titleNode=document.createElement("h3");
-   titleNode.innerHTML=question.title;
+  var container=document.createElement("div");
+  container.setAttribute("class", "border border-secondary")
+  container.style.cursor = "pointer";
+  container.setAttribute("id",question.title);
 
-    var descriptionNode=document.createElement("h3");
-   descriptionNode.innerHTML=question.description;
-
-   questionDetailContainerNode.appendChild(titleNode);
-   questionDetailContainerNode.appendChild(descriptionNode);
-}
-
-// update question
-function updateQuestion(updatedQuestion,onQuestionSave)
-{
-  
-   getAllQuestion(function(allQuestion)
-   {
-      var revisedQuestion=allQuestion.map(function(question)
-     {
-    if(updatedQuestion.title===question.title)
-    {
-      return updatedQuestion;
-    }
-    return question;
-     })
-    var body={
-      data:JSON.stringify(revisedQuestion)
-    }
-
-    var request = new XMLHttpRequest();
-
-    request.open("POST", "https://storage.codequotient.com/data/save");
-    request.setRequestHeader("Content-type","application/json");
-    request.send(JSON.stringify(body));
-
-    request.addEventListener("load",function()
-    {
-       onQuestionSave()
-    })
-
-   });
-
-   
+    //adding 
+    var duration=document.createElement("p")
+    duration.innerHTML=timeAgo(duration)(question.date);
+    duration.setAttribute("class","text-secondary")
+    var icon=document.createElement("i")
+    if(question.fav==false){
      
-}
-
-function deleteQuestion(deletequestion,onQuestionSave)
-{
-      getAllQuestion(function(allQuestion)
+     icon.setAttribute("class","fa fa-heart-o fa-2x");
+      }
+      else
       {
-           allQuestion.forEach(function(question){
+         icon.setAttribute("class","fa fa-heart fa-2x");
+      }
+    
+    icon.style.cursor = "grab";
+    icon.setAttribute("id","icon");
+    container.appendChild(icon);
 
-       if(deletequestion.title===question.title){
-        var index = allQuestion.indexOf(question)
-        allQuestion.splice(index,1);
-       }
-   })
-     var body={
-      data:JSON.stringify(allQuestion)
-    }
+  var title=document.createElement("h3")
+  title.innerHTML=question.title;
+  container.appendChild(title)
+  
 
-    var request = new XMLHttpRequest();
 
-    request.open("POST", "https://storage.codequotient.com/data/save");
-    request.setRequestHeader("Content-type","application/json");
-    request.send(JSON.stringify(body));
+  var description=document.createElement("h5")
+  description.innerHTML=question.description;
+  container.appendChild(description)
 
-    request.addEventListener("load",function()
-    {
-       onQuestionSave()
-    })
+  var created=document.createElement("lebel")
+  created.innerHTML=`Created at :${new Date(question.date).toDateString()}`
+  created.setAttribute("class","text-info")
 
-      });
 
-     
-   
+  var upNode=document.createElement("p")
+  upNode.setAttribute("class","text-primary")
+  
+  upNode.innerHTML="UpVote = "+question.up;
+  container.appendChild(upNode)
+
+   var downNode=document.createElement("p")
+   downNode.setAttribute("class","text-danger")
+  downNode.innerHTML="DownVote = "+question.down;
+  container.appendChild(downNode)
+
+  container.appendChild(created)
+  container.appendChild(duration)
+
+
+  allQuestionListNode.appendChild(container)
+
+  container.addEventListener("click",onQuestionClick(question));
+  icon.addEventListener("click",onFavClick(question));
+  
+}
+//on fav click
+
+function onFavClick(question)
+{
+ 
+  return function(event){
+  event.stopPropagation();  
+  if(question.fav==false){
+
+  question.fav=true;
+  }
+  else
+  {
+    question.fav=false;
+  }
+  updateFav(question);
+  showFav(question);
+}
 }
 
-function saveResponse(updatedQuestion,response,onQuestionSave)
+function updateFav(updated)
+{
+  getAllQuestion(function(allQuestion)
+    {
+        var onFav=allQuestion.map(function(question)
+  {
+          if(updated.title===question.title)
+          {
+            return updated;
+          }
+          return question;
+  })
+    saveToLocal(onFav);
+    }
+  )
+
+
+}
+
+function showFav(question)
+{
+  var questionContainer=document.getElementById(question.title)
+  console.log(questionContainer)
+  if(question.fav==false){
+   questionContainer.childNodes[0].setAttribute("class","fa fa-heart-o fa-2x")
+    
+    }
+    else
+    {
+      questionContainer.childNodes[0].setAttribute("class","fa fa-heart fa-2x")
+    }
+
+}
+
+//for time
+function timeAgo(node){
+  return function(time){
+      setInterval(function(){
+          node.innerHTML = "Created: " + createdAtTimer(time) + " ago";
+      },1000);
+      return `Created: ${createdAtTimer(time)} ago`;
+  }
+}
+
+function createdAtTimer(time){
+  var currTime = Date.now()-time;
+  currTime/=1000;
+  var result = parseInt(currTime/3600) + " hours : ";
+
+  currTime = currTime%3600;
+  result+= parseInt(currTime/60)  + " minutes : ";
+
+  currTime = currTime%60;
+  result+= parseInt(currTime) + " seconds ";
+  return result; 
+}
+
+//clear questionForm
+function clearQuestionForm()
+{
+   questionTitleNode.value="";
+ questionDescriptionNode.value="";
+
+
+}
+
+//listen for click on question and display in right side
+function onQuestionClick(question){
+ 
+ return function(){
+   getAllQuestion(function(allQuestions)
+   {
+      var ques = allQuestions.filter((obj) => {
+    return obj.title === question.title
+        })
+      console.log(ques);  
+    showAllResponses(ques[0]);
+   });
+   //hide question panel
+   hideQuestionPanel();
+
+   //clear last que
+   clearQuestionDetails();
+   
+   //clear previous response
+   clearResponsePanel()
+
+   //show clicked question
+   showQuestionDetail();
+
+   //create question details
+   addQuestionToRight(question);
+   
+   
+   //show previous response
+  
+
+
+   //listen to comment btn
+   submitCommentNode.onclick=onResponseSubmit(question)
+ 
+   up.onclick=upvote(question);
+   down.onclick=downvote(question);
+
+   resolverQuestionNode.onclick=questionResolved(question);
+ }
+}
+
+function showAllResponses(question) {
+  // console.log(question);
+    if(question.responses!=null){
+    if(question.responses.length>1){
+        question.responses.sort(function(type1,type2){
+            if(type1.fav)return -1;
+            if(type2.fav)return 1;
+        })
+    }
+    }
+    question.responses.forEach(function (response) {
+        addResponseToPanel(response)
+    })
+}
+
+// for resolve btn
+function questionResolved(question)
+{
+ return function(){
+  getAllQuestion(function(allquestion)
+  {
+
+  allquestion.forEach(function(all)
+  {
+    if(all.title==question.title)
+  { var index=allquestion.indexOf(all);
+    allquestion.splice(index,1);}
+  })
+
+  saveToLocal(allquestion,function()
+  {
+     refresh();
+  });
+  
+  updateRightPanel();
+  
+  });
+
+
+}
+}
+
+function updateRightPanel(){
+  questionDetailContainerNode.style.display = "none";
+  resolverQuestionContainerNode.style.display = "none";
+  commentContainerNode.style.display = "none";
+  resolverQuestionNode.style.display = "none";
+  responseContainerNode.innerHTML = "";
+  createQuestionFormNode.style.display = "block";
+}
+//refresh the list
+function refresh(){
+ allQuestionListNode.innerHTML="";
+ onLoad();
+}
+
+//save to local storage
+function saveToLocal(result,afterdel)
+{
+
+  getAllQuestion(function(allQuestion)
+{
+  allQuestion=result;
+ var allData=
+ {
+   data:JSON.stringify(allQuestion)
+ }
+ var req=new XMLHttpRequest();
+ req.open("POST","https://storage.codequotient.com/data/save");
+ req.setRequestHeader("Content-Type","application/json");
+ req.send(JSON.stringify(allData));
+ req.addEventListener("load",function(){
+  console.log("updated");
+  afterdel();
+})
+
+})
+
+}
+
+//for upvote
+function upvote(question){
+
+ return function(){
+    question.up++;
+ updatedQue(question);
+  updateQuestionUI(question);
+ }
+
+}
+
+//for downvote
+function downvote(question){
+ return function()
+ {
+    question.down++;
+updatedQue(question);
+updateQuestionUI(question);
+ }
+
+}
+
+//updateQuestionUI
+function updateQuestionUI(question)
+{
+ //get question from dom
+ var questionContainer=document.getElementById(question.title)
+ console.log(questionContainer)
+ questionContainer.childNodes[3].innerHTML="UpVote = "+question.up;
+ questionContainer.childNodes[4].innerHTML="DownVote = "+question.down;
+
+}
+
+//update 
+function updatedQue(updated)
 {
     getAllQuestion(function(allQuestion)
     {
-       var revisedQuestion=allQuestion.map(function(questions)
-     {
-    if(updatedQuestion.title===questions.title)
-    {
-      questions.responses.push(response)
-    }
-    return questions;
-     })
-
-     var body={
-      data:JSON.stringify(allQuestion)
-    }
-
-    var request = new XMLHttpRequest();
-
-    request.open("POST", "https://storage.codequotient.com/data/save");
-    request.setRequestHeader("Content-type","application/json");
-    request.send(JSON.stringify(body));
-
-    request.addEventListener("load",function()
-    {
-       onQuestionSave()
+         var revisedQue=allQuestion.map(function(question)
+  {
+          if(updated.title===question.title)
+          {
+            return updated;
+          }
+          return question;
+  })
+     console.log("revised",revisedQue);
+     saveToLocal(revisedQue);
     })
-
-
-    });
-
-    
-     
 }
 
-function clearQuestionDetails()
+//listen for click on submit respose btn
+function onResponseSubmit(question)
 {
-  questionDetailContainerNode.innerHTML="";
+  
+  return function()
+  {  
+    if (commentorNameNode.value.length > 0 && commentNameNode.value.length>0){
+      var response={
+        name:commentorNameNode.value,
+        description:commentNameNode.value,
+        time: Date.now(),
+        fav:false
+      }
+      saveResponse(question,response);
+      addResponseToPanel(response);
+
+    }
+    else {
+        alert("Both Field are Required")
+    }
+  }
+}
+
+//display response in response section
+function addResponseToPanel(response)
+{
+// refresh();
+ var container=document.createElement("div");
+ container.setAttribute("id",response.name);
+ var username = document.createElement("h4");
+ username.innerHTML = response.name;
+
+
+ var icon=document.createElement("i")
+ if(response.fav==false){
+  
+  icon.setAttribute("class","fa fa-heart-o fa-2x");
+   }
+   else
+   {
+      icon.setAttribute("class","fa fa-heart fa-2x");
+   }
+ 
+ icon.style.cursor = "grab";
+ icon.setAttribute("id","icon");
+ container.appendChild(icon);
+
+ var usercomment=document.createElement("p"); 
+ usercomment.innerHTML=response.description ;
+ var date = document.createElement("span");
+ date.innerHTML = `Answered at: ${new Date(response.time).toLocaleString()}`;
+ date.setAttribute("class","text-info")
+  container.appendChild(username) ;
+  container.appendChild(usercomment) ;
+  container.appendChild(date)
+  container.setAttribute("class","border border-secondary")
+
+   responseContainerNode.appendChild(container);
+   
+   commentNameNode.value = "";
+    
+   commentorNameNode.value="" ;
+
+   icon.onclick=onFavResponseClick(response);
+}
+
+//onFavResponseClick
+
+function onFavResponseClick(response)
+{
+  console.log(response, 'onfavResponse');
+ 
+  return function(){ 
+    // getAllQuestion();     //make change here
+    if(response.fav==false){
+  
+      response.fav=true;
+    }
+    else
+    {
+      response.fav=false;
+    }
+  
+   updateResponseFav(response)
+    showResponseFav(response);
+  }
+}
+
+//updateResponseFav
+function updateResponseFav(response)  // need some changes #######
+{  
+
+   getAllQuestion(function(allQuestion)
+   {
+      // console.log(allQuestion)
+   var update=allQuestion.map(function(question)
+   {  
+           var res=question.responses;
+           res.forEach(function(item)
+           {
+                if(item.name===response.name)
+          {
+               item.fav=response.fav;
+              console.log("question",question)
+              return question;
+        
+          }
+        
+           })
+            return question;
+       
+           
+   });
+    //  console.log("updated",update);
+   saveToLocal(update);
+     
+   
+   })
+}
+
+// on show fav response
+function showResponseFav(response)
+{
+  
+  var responseContainer=document.getElementById(response.name)
+ //  console.log(responseContainer)
+ 
+       if(response.fav==false){
+   responseContainer.childNodes[0].setAttribute("class","fa fa-heart-o fa-2x")
+    
+    }
+    else
+    {
+      responseContainer.childNodes[0].setAttribute("class","fa fa-heart fa-2x")
+    }
+
+}
+//hide question panel
+function hideQuestionPanel()
+{
+    createQuestionFormNode.style.display="none"
+}
+
+//display question details
+
+function showQuestionDetail()
+{
+   questionDetailContainerNode.style.display="block";
+  resolverQuestionContainerNode.style.display="block";
+  resolverQuestionNode.style.display="block";
+ commentContainerNode.style.display="block";
   
 }
+// clicked question 
+function addQuestionToRight(question)
+{
+  var container=document.createElement("div");
+//   container.style.background="grey"
+container.setAttribute("class", "border border-info")
+  var title=document.createElement("h3")
+  title.innerHTML=question.title;
+  container.appendChild(title)
+
+
+  var description=document.createElement("p")
+  description.innerHTML=question.description;
+  container.appendChild(description)
+
+  questionDetailContainerNode.appendChild(container)
+}
+
+//for saving comment
+function saveResponse(updated,response)
+{
+  getAllQuestion(function(allQuestion)
+  {
+    var revisedQue=allQuestion.map(function(question)
+      {
+              if(updated.title===question.title)
+              {
+                question.responses.push(response)
+              }
+              return question;
+      })
+    saveToLocal(revisedQue);
+
+  })
+
+ 
+}
+
+function clearQuestionDetails(){
+ questionDetailContainerNode.innerHTML=""
+}
+
 function clearResponsePanel()
 {
-  responseContainerNode.innerHTML="";
-}
-
-function clearResponseForm()
-{
-  commentatorNameNode.value="";
-  commentNameNode.value="";
-
-}
-
-function printNoMatchFound()
-{
-  var title=document.createElement("h1");
-  title.innerHTML="No Match Found";
-
-  allQuestionListNode.appendChild(title)
+ responseContainerNode.innerHTML="";
 }
